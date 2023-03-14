@@ -10,6 +10,7 @@ import torch.backends.cudnn as cudnn
 import torchvision.transforms as transforms
 
 
+# 常用一个数据管理的类，可以轻松计算均值，总和以及数量
 class AverageMeter(object):
 
     def __init__(self):

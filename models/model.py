@@ -59,7 +59,7 @@ class SinglePath_OneShot(nn.Module):
         self._initialize_weights()
 
     def forward(self, x, choice=np.random.randint(4, size=20)):
-        x = self.stem(x)
+        x = self.stem(x) 
         # repeat
         for i, j in enumerate(choice):
             x = self.choice_block[i][j](x)

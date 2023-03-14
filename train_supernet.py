@@ -73,6 +73,7 @@ def train(args, epoch, train_loader, model, criterion, optimizer):
 
 
 def validate(args, val_loader, model, criterion):
+    # 让bn层不更新，保证训练的bn参数被使用，没有dropout
     model.eval()
     val_loss = utils.AverageMeter()
     val_acc = utils.AverageMeter()
@@ -99,20 +100,20 @@ def main():
     train_transform, valid_transform = utils.data_transforms(args)
     if args.dataset == 'cifar10':
         trainset = torchvision.datasets.CIFAR10(root=os.path.join(args.data_root, args.dataset), train=True,
-                                                download=True, transform=train_transform)
+                                                 download=True, transform=train_transform)
         train_loader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size,
-                                                   shuffle=True, pin_memory=True, num_workers=8)
+                                                   shuffle=True, pin_memory=True, num_workers=1)
         valset = torchvision.datasets.CIFAR10(root=os.path.join(args.data_root, args.dataset), train=False,
                                               download=True, transform=valid_transform)
         val_loader = torch.utils.data.DataLoader(valset, batch_size=args.batch_size,
-                                                 shuffle=False, pin_memory=True, num_workers=8)
+                                                 shuffle=False, pin_memory=True, num_workers=1)
     elif args.dataset == 'imagenet':
         train_data_set = datasets.ImageNet(os.path.join(args.data_root, args.dataset, 'train'), train_transform)
         val_data_set = datasets.ImageNet(os.path.join(args.data_root, args.dataset, 'valid'), valid_transform)
         train_loader = torch.utils.data.DataLoader(train_data_set, batch_size=args.batch_size, shuffle=True,
-                                                   num_workers=8, pin_memory=True, sampler=None)
+                                                   num_workers=1, pin_memory=True, sampler=None)
         val_loader = torch.utils.data.DataLoader(val_data_set, batch_size=args.batch_size, shuffle=False,
-                                                 num_workers=8, pin_memory=True)
+                                                 num_workers=1, pin_memory=True)
     else:
         raise ValueError('Undefined dataset !!!')
 
@@ -128,8 +129,9 @@ def main():
     # Running
     start = time.time()
     best_val_acc = 0.0
-    for epoch in range(args.epochs):
+    for epoch in range(args.epochs): 
         # Supernet Training
+        
         train_loss, train_acc = train(args, epoch, train_loader, model, criterion, optimizer)
         scheduler.step()
         logging.info(
